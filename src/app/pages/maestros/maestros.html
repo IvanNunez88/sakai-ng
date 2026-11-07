@@ -1,0 +1,98 @@
+<!-- preventOpenDuplicates: no repite un aviso que ya esta en pantalla -->
+<p-toast preventOpenDuplicates />
+
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Nuevo" icon="pi pi-plus" severity="secondary" (onClick)="nuevo()" />
+    </ng-template>
+    <ng-template #end>
+        <p-button label="Recargar" icon="pi pi-refresh" severity="secondary" [loading]="cargando()" (onClick)="cargar()" />
+    </ng-template>
+</p-toolbar>
+
+<p-table
+    #dt
+    [value]="maestros()"
+    [loading]="cargando()"
+    [rows]="10"
+    [paginator]="true"
+    [globalFilterFields]="['idMaestro', 'nombre', 'aPaterno', 'aMaterno']"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    [rowHover]="true"
+    dataKey="idMaestro"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} maestros"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 20, 30]"
+>
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Maestros</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (input)="filtrar(dt, $event)" placeholder="Buscar..." />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th pSortableColumn="idMaestro" style="width: 8rem">Id <p-sortIcon field="idMaestro" /></th>
+            <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre" /></th>
+            <th pSortableColumn="aPaterno">Apellido paterno <p-sortIcon field="aPaterno" /></th>
+            <th pSortableColumn="aMaterno">Apellido materno <p-sortIcon field="aMaterno" /></th>
+            <th pSortableColumn="fecRegistro">Registro <p-sortIcon field="fecRegistro" /></th>
+            <th style="width: 8rem"></th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-maestro>
+        <tr>
+            <td>{{ maestro.idMaestro }}</td>
+            <td>{{ maestro.nombre }}</td>
+            <td>{{ maestro.aPaterno }}</td>
+            <td>{{ maestro.aMaterno }}</td>
+            <td>{{ maestro.fecRegistro | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="editar(maestro)" />
+                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="eliminar(maestro)" />
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+        <tr>
+            <td colspan="6">No hay maestros registrados.</td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="dialogo" [style]="{ width: '450px' }" [header]="idEdicion ? 'Editar maestro' : 'Nuevo maestro'" [modal]="true">
+    <ng-template #content>
+        <div class="flex flex-col gap-6">
+            <div>
+                <label for="nombre" class="block font-bold mb-3">Nombre</label>
+                <input type="text" pInputText id="nombre" [(ngModel)]="form.nombre" maxlength="50" required autofocus fluid />
+                @if (enviado() && !form.nombre.trim()) {
+                    <small class="text-red-500">El nombre es requerido.</small>
+                }
+            </div>
+            <div>
+                <label for="aPaterno" class="block font-bold mb-3">Apellido paterno</label>
+                <input type="text" pInputText id="aPaterno" [(ngModel)]="form.aPaterno" maxlength="80" required fluid />
+                @if (enviado() && !form.aPaterno.trim()) {
+                    <small class="text-red-500">El apellido paterno es requerido.</small>
+                }
+            </div>
+            <div>
+                <label for="aMaterno" class="block font-bold mb-3">Apellido materno</label>
+                <input type="text" pInputText id="aMaterno" [(ngModel)]="form.aMaterno" maxlength="80" required fluid />
+                @if (enviado() && !form.aMaterno.trim()) {
+                    <small class="text-red-500">El apellido materno es requerido.</small>
+                }
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" text (click)="dialogo.set(false)" />
+        <p-button label="Guardar" icon="pi pi-check" [loading]="guardando()" (click)="guardar()" />
+    </ng-template>
+</p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />

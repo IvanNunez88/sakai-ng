@@ -1,0 +1,116 @@
+<!-- preventOpenDuplicates: no repite un aviso que ya esta en pantalla -->
+<p-toast preventOpenDuplicates />
+
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Nuevo" icon="pi pi-plus" severity="secondary" (onClick)="nuevo()" />
+    </ng-template>
+    <ng-template #end>
+        <p-button label="Recargar" icon="pi pi-refresh" severity="secondary" [loading]="cargando()" (onClick)="cargar()" />
+    </ng-template>
+</p-toolbar>
+
+<p-table
+    #dt
+    [value]="alumnos()"
+    [loading]="cargando()"
+    [rows]="10"
+    [paginator]="true"
+    [globalFilterFields]="['idAlumno', 'nombre', 'aPaterno', 'aMaterno', 'carrera']"
+    [tableStyle]="{ 'min-width': '60rem' }"
+    [rowHover]="true"
+    dataKey="idAlumno"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} alumnos"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 20, 30]"
+>
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Alumnos</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (input)="filtrar(dt, $event)" placeholder="Buscar..." />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th pSortableColumn="idAlumno" style="width: 8rem">Id <p-sortIcon field="idAlumno" /></th>
+            <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre" /></th>
+            <th pSortableColumn="aPaterno">Apellido paterno <p-sortIcon field="aPaterno" /></th>
+            <th pSortableColumn="aMaterno">Apellido materno <p-sortIcon field="aMaterno" /></th>
+            <th pSortableColumn="carrera">Carrera <p-sortIcon field="carrera" /></th>
+            <th pSortableColumn="fecRegistro">Registro <p-sortIcon field="fecRegistro" /></th>
+            <th style="width: 8rem"></th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-alumno>
+        <tr>
+            <td>{{ alumno.idAlumno }}</td>
+            <td>{{ alumno.nombre }}</td>
+            <td>{{ alumno.aPaterno }}</td>
+            <td>{{ alumno.aMaterno }}</td>
+            <td><p-tag [value]="alumno.carrera" severity="info" /></td>
+            <td>{{ alumno.fecRegistro | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="editar(alumno)" />
+                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="eliminar(alumno)" />
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+        <tr>
+            <td colspan="7">No hay alumnos registrados.</td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="dialogo" [style]="{ width: '450px' }" [header]="idEdicion ? 'Editar alumno' : 'Nuevo alumno'" [modal]="true">
+    <ng-template #content>
+        <div class="flex flex-col gap-6">
+            <div>
+                <label for="nombre" class="block font-bold mb-3">Nombre</label>
+                <input type="text" pInputText id="nombre" [(ngModel)]="form.nombre" maxlength="50" required autofocus fluid />
+                @if (enviado() && !form.nombre.trim()) {
+                    <small class="text-red-500">El nombre es requerido.</small>
+                }
+            </div>
+            <div>
+                <label for="aPaterno" class="block font-bold mb-3">Apellido paterno</label>
+                <input type="text" pInputText id="aPaterno" [(ngModel)]="form.aPaterno" maxlength="80" required fluid />
+                @if (enviado() && !form.aPaterno.trim()) {
+                    <small class="text-red-500">El apellido paterno es requerido.</small>
+                }
+            </div>
+            <div>
+                <label for="aMaterno" class="block font-bold mb-3">Apellido materno</label>
+                <input type="text" pInputText id="aMaterno" [(ngModel)]="form.aMaterno" maxlength="80" required fluid />
+                @if (enviado() && !form.aMaterno.trim()) {
+                    <small class="text-red-500">El apellido materno es requerido.</small>
+                }
+            </div>
+            <div>
+                <label for="idCarrera" class="block font-bold mb-3">Carrera</label>
+                <p-select
+                    [(ngModel)]="form.idCarrera"
+                    inputId="idCarrera"
+                    [options]="carreras()"
+                    optionLabel="descripcion"
+                    optionValue="idCarrera"
+                    placeholder="Selecciona una carrera"
+                    appendTo="body"
+                    fluid
+                />
+                @if (enviado() && !form.idCarrera) {
+                    <small class="text-red-500">La carrera es requerida.</small>
+                }
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" text (click)="dialogo.set(false)" />
+        <p-button label="Guardar" icon="pi pi-check" [loading]="guardando()" (click)="guardar()" />
+    </ng-template>
+</p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />
